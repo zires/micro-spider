@@ -1,9 +1,9 @@
 require 'test_helper'
 
-class TinySpiderTest < MiniTest::Unit::TestCase
+class MicroSpiderTest < MiniTest::Unit::TestCase
 
   def setup
-   @spider = TinySpider.new
+   @spider = MicroSpider.new
   end
 
   def test_spider_can_visit_path_with_some_delays

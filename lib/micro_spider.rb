@@ -8,7 +8,7 @@ Capybara.current_driver = :webkit
 require 'logger'
 require 'spider_core'
 
-class TinySpider
+class MicroSpider
 
   include Capybara::DSL
   include SpiderCore::Behavior

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    tiny_spider (0.1.16)
+    micro_spider (0.1.16)
       capybara
       capybara-webkit
 
@@ -51,9 +51,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  micro_spider!
   pry
   rake
   sinatra
-  tiny_spider!
   turn
   yard

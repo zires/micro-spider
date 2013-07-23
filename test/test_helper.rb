@@ -16,7 +16,7 @@ begin
 rescue LoadError
 end
 
-require 'tiny_spider'
+require 'micro_spider'
 
 class MyApp < Sinatra::Base
 
@@ -31,7 +31,7 @@ class MyApp < Sinatra::Base
 </div>
     ERB
   end
-  
+
   get '/a' do
     erb <<-ERB
 <div id='name'>This is a</div>

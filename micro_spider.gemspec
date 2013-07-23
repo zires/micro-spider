@@ -3,11 +3,11 @@ $:.push File.expand_path("../lib", __FILE__)
 require "spider_core/version"
 
 Gem::Specification.new do |s|
-  s.name        = "tiny_spider"
+  s.name        = "micro_spider"
   s.version     = SpiderCore::VERSION
   s.authors     = ["zires"]
   s.email       = ["zshuaibin@gmail.com"]
-  s.homepage    = "https://github.com/zires/tiny-spider"
+  s.homepage    = "https://github.com/zires/micro-spider"
   s.summary     = "A DSL to write web spider."
   s.description = "A DSL to write web spider. Depend on capybara and capybara-webkit."
 
