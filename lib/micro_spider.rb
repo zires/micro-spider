@@ -6,6 +6,7 @@ Capybara.run_server = false
 Capybara.current_driver = :webkit
 
 require 'logger'
+require 'set'
 require 'spider_core'
 
 class MicroSpider
@@ -16,14 +17,16 @@ class MicroSpider
   include SpiderCore::FollowDSL
   include SpiderCore::PaginationDSL
 
-  attr_reader   :excretion, :paths, :delay, :current_location
+  attr_reader   :excretion, :paths, :delay, :current_location, :visited_paths, :broken_paths
   attr_accessor :logger, :actions, :recipe, :skip_set_entrance
 
   def initialize(excretion = nil)
-    @paths     = []
-    @actions   = []
+    @paths   = []
+    @actions = []
     @excretion = excretion || { status: 'inprogress', results: [] }
-    @logger    = Logger.new(STDOUT)
+    @logger        = Logger.new(STDOUT)
+    @visited_paths = Set.new
+    @broken_paths  = []
   end
 
   # The seconds between each two request.
@@ -95,20 +98,38 @@ class MicroSpider
     return excretion if completed?
 
     @paths.compact!
-    path = @paths.shift
+    path = nil
+    loop do
+      path = @paths.shift
+      break if path.nil?
+      break unless @visited_paths.include?(path)
+    end
+
     if path.nil?
       excretion[:status] = 'completed'
       return excretion
     end
 
-    visit(path)
-    execute_actions
-    yield(@current_location) if block_given?
-    excretion[:results] << @current_location
-
-    @skip_set_entrance = true
-    learn(@recipe)
-    crawl(&block)
+    begin
+      visit(path)
+    rescue Timeout::Error => err
+      @broken_paths << path
+      logger.fatal("Timeout!!! execution expired when visit `#{path}`")
+      logger.fatal(err)
+    rescue Exception => err
+      @broken_paths << path
+      logger.fatal("Caught exception when visit `#{path}`")
+      logger.fatal(err)
+    else
+      @visited_paths << path
+      execute_actions
+      yield(@current_location) if block_given?
+      excretion[:results] << @current_location
+    ensure
+      @skip_set_entrance = true
+      learn(@recipe)
+      crawl(&block)
+    end
 
     excretion
   end
@@ -126,6 +147,8 @@ class MicroSpider
     spider = self.clone
     spider.instance_variable_set(:@paths, [])
     spider.instance_variable_set(:@actions, [])
+    spider.instance_variable_set(:@visited_paths, [])
+    spider.instance_variable_set(:@broken_paths, Set.new)
     spider.instance_variable_set(:@excretion, { status: 'inprogress', results: [] })
     spider.skip_set_entrance = false
     spider

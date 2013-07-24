@@ -4,6 +4,7 @@ class MicroSpiderTest < MiniTest::Unit::TestCase
 
   def setup
    @spider = MicroSpider.new
+   @spider.logger.level = Logger::WARN
   end
 
   def test_spider_can_visit_path_with_some_delays
