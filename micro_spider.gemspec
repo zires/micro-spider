@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/zires/micro-spider"
   s.summary     = "A DSL to write web spider."
   s.description = "A DSL to write web spider. Depend on capybara and capybara-webkit."
+  s.license     = 'MIT'
 
   s.files = Dir["{lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]
