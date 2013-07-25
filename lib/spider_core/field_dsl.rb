@@ -36,10 +36,12 @@ module SpiderCore
 
     protected
     def handle_element(element)
-      if element && element.respond_to?(:text)
-        element.text
-      else
+      if element.is_a?(String)
         element
+      elsif element.tag_name == 'input'
+        element.value
+      else
+        element.text
       end
     end
 
@@ -63,7 +65,7 @@ module SpiderCore
         when :field
           scan_first(action_opts[:kind], action_opts[:pattern])
         when :fields
-          scan_all(action_opts[:kind], action_opts[:pattern], opts).lazy
+          scan_all(action_opts[:kind], action_opts[:pattern], opts)
         else
           raise 'Unknow action.'
         end

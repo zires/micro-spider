@@ -1,9 +1,11 @@
+require 'enumerable/lazy' if RUBY_VERSION < '2.0'
+
 module SpiderCore
   module Behavior
 
     protected
 
-    def scan_all(kind, pattern, **opts)
+    def scan_all(kind, pattern, opts = {})
       if pattern.is_a?(String)
         elements = all(kind, pattern).lazy
         if opts[:limit] && opts[:limit].to_i > 0

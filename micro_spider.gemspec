@@ -16,6 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "capybara"
   s.add_dependency "capybara-webkit"
+  s.add_dependency "enumerable-lazy"
 
   s.add_development_dependency "pry"
   s.add_development_dependency "yard"

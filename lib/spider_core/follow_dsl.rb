@@ -3,8 +3,9 @@ module SpiderCore
 
     attr_accessor :skip_followers
 
-    def follow(pattern, kind: :css, **opts, &block)
+    def follow(pattern, opts = {}, &block)
       return unless block_given?
+      kind = opts[:kind] || :css
       actions << lambda {
         spider = self.spawn
         spider.learn(&block)

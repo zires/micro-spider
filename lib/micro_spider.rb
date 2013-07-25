@@ -2,8 +2,11 @@ require 'capybara'
 require 'capybara-webkit'
 require 'capybara/dsl'
 
-Capybara.run_server = false
 Capybara.current_driver = :webkit
+Capybara.configure do |config|
+  config.ignore_hidden_elements = false
+  config.run_server = false
+end
 
 require 'logger'
 require 'set'
@@ -85,8 +88,9 @@ class MicroSpider
     @paths += path_or_paths
   end
 
-  def entrance_on_path(path, pattern, kind: :css, **opts, &block)
+  def entrance_on_path(path, pattern, opts = {}, &block)
     return if @skip_set_entrance
+    kind = opts[:kind] || :css
     visit(path)
     entrances = scan_all(kind, pattern, opts).map do |element|
       block_given? ? yield(element) : element[:href]
@@ -110,12 +114,17 @@ class MicroSpider
       return excretion
     end
 
+    learn(@recipe) if @actions.empty?
+
     begin
       visit(path)
     rescue Timeout::Error => err
       @broken_paths << path
       logger.fatal("Timeout!!! execution expired when visit `#{path}`")
       logger.fatal(err)
+    rescue SystemExit, Interrupt
+      logger.fatal("SystemExit && Interrupt")
+      exit!
     rescue Exception => err
       @broken_paths << path
       logger.fatal("Caught exception when visit `#{path}`")
@@ -126,8 +135,8 @@ class MicroSpider
       yield(@current_location) if block_given?
       excretion[:results] << @current_location
     ensure
+      @actions = []
       @skip_set_entrance = true
-      learn(@recipe)
       crawl(&block)
     end
 

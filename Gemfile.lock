@@ -1,9 +1,10 @@
 PATH
   remote: .
   specs:
-    micro_spider (0.1.16)
+    micro_spider (0.1.17)
       capybara
       capybara-webkit
+      enumerable-lazy
 
 GEM
   remote: http://rubygems.org/
@@ -19,6 +20,7 @@ GEM
       capybara (~> 2.0, >= 2.0.2)
       json
     coderay (1.0.9)
+    enumerable-lazy (0.0.1)
     json (1.8.0)
     method_source (0.8.1)
     mime-types (1.23)
