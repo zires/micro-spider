@@ -43,8 +43,9 @@ class MicroSpider
   # Visit the path.
   #
   # @param path [String] the path to visit, can be absolute path or relative path.
+  #
   # @example Visit a path
-  #   spider = TinySpider.new
+  #   spider = MicroSpider.new
   #   spider.visit('/example')
   #   spider.visit('http://google.com')
   #
@@ -56,13 +57,37 @@ class MicroSpider
     logger.info "Current location is #{path}."
   end
 
+  # Click the locator. This will trigger visit action and change current location.
+  # @params locator [String] the text or id of the link.
+  #
   def click(locator, opts = {})
-    actions << lambda { 
+    actions << lambda {
       path = find_link(locator, opts)[:href]
       visit(path)
     }
   end
-
+  
+  # Teach the spider behaviors and it will repeat to the end.
+  # @param recipe [String, Proc] the recipe be learned.
+  #
+  # @example
+  #   spider = MicroSpider.new
+  #   spider.learn do
+  #     entrance 'http://google.com'
+  #   end
+  #   spider.crawl
+  #
+  # @example
+  #   spider.learn("entrance 'http://google.com'")
+  #   spider.crawl
+  #
+  # @example
+  #   recipe = lambda {
+  #     entrance 'http://google.com'
+  #   }
+  #   spider.learn(recipe)
+  #   spider.crawl
+  #
   def learn(recipe = nil, &block)
     if block_given?
       instance_eval(&block)
@@ -82,12 +107,30 @@ class MicroSpider
     return if @site
     Capybara.app_host = @excretion[:site] = @site = url
   end
-
+  
+  # This will be the first path for spider to visit.
+  # If more than one entrance, the spider will crawl theme one by one.
+  # @param path_or_paths [String] one or more entrances
+  #
+  # @example
+  #   spider = MicroSpider.new
+  #   spider.site('http://google.com')
+  #   spider.entrance('/a')
+  #   spider.entrance('/b')
+  #
   def entrance(*path_or_paths)
     return if @skip_set_entrance
     @paths += path_or_paths
   end
 
+  # Sometimes the entrances are on the page.
+  # @param path [String] path to visit
+  # @param pattern [String, Regexp] links pattern
+  #
+  # @example
+  #   spider = MicroSpider.new
+  #   spider.entrance_on_path('http://google.com', '.links a')
+  #
   def entrance_on_path(path, pattern, opts = {}, &block)
     return if @skip_set_entrance
     kind = opts[:kind] || :css
@@ -143,6 +186,19 @@ class MicroSpider
     excretion
   end
 
+  # Spider can create custom action when it is crawling.
+  # @param name [String] the name of action
+  # @param block [Proc] the actions
+  #
+  # @example
+  #   spider = MicroSpider.new
+  #
+  #   spider.create_action :save do |result|
+  #     SomeClass.save(result)
+  #   end
+  #
+  #   spider.save
+  #
   def create_action(name, &block)
     action = proc { actions << lambda { block.call(current_location) } }
     metaclass.send :define_method, name, &action
