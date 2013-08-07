@@ -3,10 +3,15 @@ module SpiderCore
 
     attr_accessor :next_page, :skip_pages
 
-    def keep_eyes_on_next_page(pattern, opts = {})
+    def keep_eyes_on_next_page(pattern, opts = {}, &block)
       kind = opts[:kind] || :css
       actions << lambda {
-        @next_page = first(kind, pattern)[:href] rescue nil
+        element = first(kind, pattern) rescue nil
+        @next_page = if block_given?
+          yield(element)
+        else
+          element && element[:href]
+        end
         @paths.unshift(@next_page) if @next_page
       }
     end

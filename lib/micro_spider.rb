@@ -10,6 +10,7 @@ end
 
 require 'logger'
 require 'set'
+require 'timeout'
 require 'spider_core'
 
 class MicroSpider
@@ -21,11 +22,12 @@ class MicroSpider
   include SpiderCore::PaginationDSL
 
   attr_reader   :excretion, :paths, :delay, :current_location, :visited_paths, :broken_paths
-  attr_accessor :logger, :actions, :recipe, :skip_set_entrance
+  attr_accessor :logger, :actions, :recipe, :skip_set_entrance, :timeout
 
   def initialize(excretion = nil)
     @paths   = []
     @actions = []
+    @timeout = 120
     @excretion = excretion || { status: 'inprogress', results: [] }
     @logger        = Logger.new(STDOUT)
     @visited_paths = Set.new
@@ -205,7 +207,16 @@ class MicroSpider
   end
 
   def execute_actions
-    actions.delete_if { |action| action.call }
+    actions.delete_if { |action|
+      begin
+        Timeout::timeout(@timeout) { action.call }
+      rescue Timeout::Error => err
+        logger.fatal('Timeout!!! execution expired when execute action')
+        logger.fatal(err.message)
+        logger.fatal(err.backtrace.inspect)
+        break
+      end
+    }
   end
 
   def spawn
