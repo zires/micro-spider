@@ -73,6 +73,22 @@ class MicroSpiderTest < MiniTest::Unit::TestCase
       assert_equal "Current Page #{$1}", f[:field].first[:current_page]
     end
   end
+  
+  def test_spider_can_follow_and_keep_eyes_on_next_page
+    @spider.entrance('/page/1')
+    @spider.follow('a.next_page') do
+      keep_eyes_on_next_page('.pages a.next_page')
+      field :current_page, '#current_page'
+    end
+    excretion = @spider.crawl
+    excretion[:results].first[:follow].first.each do |f|
+      f[:entrance] =~ /\/page\/(\d)/
+      assert_equal "Current Page #{$1}", f[:field].first[:current_page]
+    end
+  end
+
+  def test_spider_can_nest_follow_lots_of_links_and_keep_eyes_on_next_page
+  end
 
   def test_spider_can_create_custom_action
     @spider.create_action(:save) do |result|

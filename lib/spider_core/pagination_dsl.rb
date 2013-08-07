@@ -6,7 +6,7 @@ module SpiderCore
     def keep_eyes_on_next_page(pattern, opts = {}, &block)
       kind = opts[:kind] || :css
       actions << lambda {
-        element = first(kind, pattern) rescue nil
+        element = first(kind, pattern)
         @next_page = if block_given?
           yield(element)
         else
