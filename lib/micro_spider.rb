@@ -62,13 +62,21 @@ class MicroSpider
   # Click the locator. This will trigger visit action and change current location.
   # @params locator [String] the text or id of the link.
   #
-  def click(locator, opts = {})
+  def click(locator, opts = {}, &block)
     actions << lambda {
       path = find_link(locator, opts)[:href]
-      visit(path)
+      if block_given?
+        spider = self.spawn
+        spider.entrance(path)
+        spider.learn(&block)
+        current_location[:click] ||= []
+        current_location[:click] << spider.crawl[:results]
+      else
+        visit(path)
+      end
     }
   end
-  
+
   # Teach the spider behaviors and it will repeat to the end.
   # @param recipe [String, Proc] the recipe be learned.
   #
