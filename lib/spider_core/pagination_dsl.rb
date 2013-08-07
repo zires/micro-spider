@@ -7,12 +7,8 @@ module SpiderCore
       kind = opts[:kind] || :css
       actions << lambda {
         element = first(kind, pattern)
-        @next_page = if block_given?
-          yield(element)
-        else
-          element && element[:href]
-        end
-        @paths.unshift(@next_page) if @next_page
+        path = block_given? ? yield(element) : element && element[:href]
+        @paths.unshift(path) if path
       }
     end
 

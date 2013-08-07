@@ -223,7 +223,7 @@ class MicroSpider
     spider = self.clone
     spider.instance_variable_set(:@paths, [])
     spider.instance_variable_set(:@actions, [])
-    spider.instance_variable_set(:@visited_paths, [])
+    spider.instance_variable_set(:@visited_paths, Set.new)
     spider.instance_variable_set(:@broken_paths, Set.new)
     spider.instance_variable_set(:@excretion, { status: 'inprogress', results: [] })
     spider.skip_set_entrance = false
