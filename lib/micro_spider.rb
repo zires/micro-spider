@@ -65,7 +65,7 @@ class MicroSpider
   #
   def click(locator, opts = {}, &block)
     actions << lambda {
-      path = first_link(locator, opts)[:href]
+      path = first(locator, opts)[:href] rescue nil
       raise SpiderCore::ClickPathNotFound, "#{locator} not found" if path.nil?
       if block_given?
         spider = self.spawn
