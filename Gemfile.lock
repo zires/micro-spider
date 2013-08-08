@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    micro_spider (0.1.17)
+    micro_spider (0.1.18)
       capybara
       capybara-webkit
       enumerable-lazy

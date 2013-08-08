@@ -52,6 +52,7 @@ class MicroSpider
   #   spider.visit('http://google.com')
   #
   def visit(path)
+    raise ArgumentError, "Path can't be nil or empty" if path.nil? || path.empty?
     sleep_or_not
     logger.info "Begin to visit #{path}."
     super(path)
@@ -64,7 +65,8 @@ class MicroSpider
   #
   def click(locator, opts = {}, &block)
     actions << lambda {
-      path = find_link(locator, opts)[:href]
+      path = first_link(locator, opts)[:href]
+      raise SpiderCore::ClickPathNotFound, "#{locator} not found" if path.nil?
       if block_given?
         spider = self.spawn
         spider.entrance(path)
@@ -220,6 +222,10 @@ class MicroSpider
         Timeout::timeout(@timeout) { action.call }
       rescue Timeout::Error => err
         logger.fatal('Timeout!!! execution expired when execute action')
+        logger.fatal(err.message)
+        logger.fatal(err.backtrace.inspect)
+        break
+      rescue SpiderCore::ClickPathNotFound => err
         logger.fatal(err.message)
         logger.fatal(err.backtrace.inspect)
         break
