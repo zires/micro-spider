@@ -3,7 +3,7 @@ PATH
   specs:
     micro_spider (0.1.18)
       capybara
-      capybara-webkit
+      capybara-mechanize
       enumerable-lazy
 
 GEM
@@ -16,17 +16,32 @@ GEM
       rack (>= 1.0.0)
       rack-test (>= 0.5.4)
       xpath (~> 2.0)
-    capybara-webkit (1.0.0)
-      capybara (~> 2.0, >= 2.0.2)
-      json
+    capybara-mechanize (1.1.0)
+      capybara (~> 2.1.0)
+      mechanize (~> 2.7)
     coderay (1.0.9)
+    domain_name (0.5.13)
+      unf (>= 0.0.5, < 1.0.0)
     enumerable-lazy (0.0.1)
-    json (1.8.0)
+    http-cookie (1.0.2)
+      domain_name (~> 0.5)
+    mechanize (2.7.2)
+      domain_name (~> 0.5, >= 0.5.1)
+      http-cookie (~> 1.0.0)
+      mime-types (~> 1.17, >= 1.17.2)
+      net-http-digest_auth (~> 1.1, >= 1.1.1)
+      net-http-persistent (~> 2.5, >= 2.5.2)
+      nokogiri (~> 1.4)
+      ntlm-http (~> 0.1, >= 0.1.1)
+      webrobots (>= 0.0.9, < 0.2)
     method_source (0.8.1)
-    mime-types (1.23)
+    mime-types (1.25)
     mini_portile (0.5.1)
+    net-http-digest_auth (1.4)
+    net-http-persistent (2.9)
     nokogiri (1.6.0)
       mini_portile (~> 0.5.0)
+    ntlm-http (0.1.1)
     pry (0.9.12.2)
       coderay (~> 1.0.5)
       method_source (~> 0.8)
@@ -45,6 +60,10 @@ GEM
     tilt (1.4.1)
     turn (0.9.6)
       ansi
+    unf (0.1.2)
+      unf_ext
+    unf_ext (0.0.6)
+    webrobots (0.1.1)
     xpath (2.0.0)
       nokogiri (~> 1.3)
     yard (0.8.6.2)

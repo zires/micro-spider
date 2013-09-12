@@ -1,11 +1,21 @@
 require 'capybara'
-require 'capybara-webkit'
 require 'capybara/dsl'
+require 'capybara/mechanize'
 
-Capybara.current_driver = :webkit
+Capybara.default_driver = :mechanize
+Capybara.current_driver = :mechanize
+Capybara.app = proc { |env| [200, {'Content-Type' => 'text/html'}, 'You need to use MicroSpider#site method to set app host.'] }
 Capybara.configure do |config|
   config.ignore_hidden_elements = false
   config.run_server = false
+end
+
+# If has capybara-webkit, first priority
+begin
+  require 'capybara-webkit'
+  Capybara.current_driver = :webkit
+rescue Exception => e
+  # Nothing to do.
 end
 
 require 'logger'
