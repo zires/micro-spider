@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    micro_spider (0.1.18)
+    micro_spider (0.1.20)
       capybara
       capybara-mechanize
       enumerable-lazy

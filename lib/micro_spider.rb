@@ -35,13 +35,14 @@ class MicroSpider
   attr_accessor :logger, :actions, :recipe, :skip_set_entrance, :timeout
 
   def initialize(excretion = nil)
-    @paths   = []
-    @actions = []
-    @timeout = 120
-    @excretion = excretion || { status: 'inprogress', results: [] }
-    @logger        = Logger.new(STDOUT)
-    @visited_paths = Set.new
-    @broken_paths  = []
+    @paths            = []
+    @actions          = []
+    @setted_variables = {}
+    @timeout          = 120
+    @excretion        = excretion || { status: 'inprogress', results: [] }
+    @logger           = Logger.new(STDOUT)
+    @visited_paths    = Set.new
+    @broken_paths     = []
   end
 
   # The seconds between each two request.
@@ -68,6 +69,31 @@ class MicroSpider
     super(path)
     @current_location = {entrance: path}
     logger.info "Current location is #{path}."
+  end
+
+  # Set a variable. You can use it later.
+  #
+  # @param name [String]  the variable name
+  # @param value [String] the variable value
+  # @param opts [Hash] the options. can set selector with css or xpath
+  #
+  # @example Set a variable
+  #   spider = MicroSpider.new
+  #   spider.set :id, '645'
+  #   spider.set :table, '.tb a', selector: :css
+  #   spider.set :table, '.tb a', selector: :css do |e|
+  #     e['src']
+  #   end
+  def set(name, value, opts = {}, &block)
+    selector = opts.delete(:selector)
+    if selector.nil?
+      @setted_variables[name.to_s] = value
+    else
+      actions << lambda {
+        elements = scan_all(selector, value, opts)
+        @setted_variables[name.to_s] = block_given? ? yield(elements) : handle_element(elements.first)
+      }
+    end
   end
 
   # Click the locator. This will trigger visit action and change current location.
@@ -129,7 +155,7 @@ class MicroSpider
     return if @site
     Capybara.app_host = @excretion[:site] = @site = url
   end
-  
+
   # This will be the first path for spider to visit.
   # If more than one entrance, the spider will crawl theme one by one.
   # @param path_or_paths [String] one or more entrances
@@ -248,7 +274,7 @@ class MicroSpider
     spider.instance_variable_set(:@paths, [])
     spider.instance_variable_set(:@actions, [])
     spider.instance_variable_set(:@visited_paths, Set.new)
-    spider.instance_variable_set(:@broken_paths, Set.new)
+    spider.instance_variable_set(:@broken_paths,  Set.new)
     spider.instance_variable_set(:@excretion, { status: 'inprogress', results: [] })
     spider.skip_set_entrance = false
     spider

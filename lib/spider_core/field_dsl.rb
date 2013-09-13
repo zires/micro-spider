@@ -35,27 +35,6 @@ module SpiderCore
     end
 
     protected
-    def handle_element(element)
-      if element.is_a?(String)
-        element
-      elsif element.tag_name == 'input'
-        element.value
-      else
-        element.text
-      end
-    end
-
-    def handle_elements(elements, &block)
-      if elements.respond_to?(:map) && block_given?
-        elements.map { |element| yield(element) }.force
-      elsif elements.respond_to?(:map)
-        elements.map { |element| handle_element(element) }.force
-      elsif block_given?
-        yield(elements)
-      else
-        handle_element(elements)
-      end
-    end
 
     def action_for(action, action_opts = {}, opts = {}, &block)
       begin
