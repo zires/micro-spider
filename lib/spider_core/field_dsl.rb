@@ -34,6 +34,16 @@ module SpiderCore
       fields(display, pattern, opts.merge(kind: :xpath), &block)
     end
 
+    def foreach(pattern, opts = {}, &block)
+      return unless block_given?
+      kind     = opts[:kind] || :css
+      actions << lambda {
+        scan_all(kind, pattern).each do |element|
+          yield(element)
+        end
+      }
+    end
+
     protected
 
     def action_for(action, action_opts = {}, opts = {}, &block)

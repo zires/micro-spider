@@ -234,6 +234,14 @@ class MicroSpider
     excretion
   end
 
+  def reset
+    return unless completed?
+    @paths            = visited_paths.to_a
+    @excretion        = { status: 'inprogress', results: [] }
+    @visited_paths    = Set.new
+    @current_location = nil
+  end
+
   # Spider can create custom action when it is crawling.
   # @param name [String] the name of action
   # @param block [Proc] the actions
