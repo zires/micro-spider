@@ -277,14 +277,21 @@ class MicroSpider
     }
   end
 
-  def spawn
-    spider = self.clone
-    spider.instance_variable_set(:@paths, [])
-    spider.instance_variable_set(:@actions, [])
-    spider.instance_variable_set(:@visited_paths, Set.new)
-    spider.instance_variable_set(:@broken_paths,  Set.new)
-    spider.instance_variable_set(:@excretion, { status: 'inprogress', results: [] })
-    spider.skip_set_entrance = false
+  # @example
+  #   spider = MicroSpider.new
+  #   kid = spider.spawn
+  #
+  #   or
+  #
+  #   kid = spider.spawn do
+  #     ...
+  #     ...
+  #   end
+  def spawn(&block)
+    spider         = self.class.new
+    spider.logger  = logger
+    spider.timeout = timeout
+    spider.learn(&block) if block_given?
     spider
   end
 
@@ -298,6 +305,12 @@ class MicroSpider
 
   def metaclass
     class << self; self; end
+  end
+
+  # The default page is Capybara.current_session.
+  # Share one page may cause difficult issue, so here i separate it.
+  def page
+    @page ||= Capybara::Session.new(Capybara.mode, Capybara.app)
   end
 
   protected
