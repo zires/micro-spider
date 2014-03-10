@@ -190,7 +190,10 @@ class MicroSpider
   end
 
   def crawl(&block)
-    return excretion if completed?
+    if completed?
+      suicide
+      return excretion
+    end
 
     @paths.compact!
     path = nil
@@ -220,6 +223,7 @@ class MicroSpider
       @broken_paths << path
       logger.fatal("Caught exception when visit `#{path}`")
       logger.fatal(err)
+      logger.fatal(err.backtrace.join("\n"))
     else
       @visited_paths << path
       execute_actions
@@ -313,13 +317,24 @@ class MicroSpider
     @page ||= Capybara::Session.new(Capybara.mode, Capybara.app)
   end
 
-  protected
-  def sleep_or_not
-    if delay && delay > 0
-      logger.info "Nedd sleep #{delay} sec."
-      sleep(delay)
-      logger.info 'Wakeup'
+  # Because we don't share the page, the connect may or maynot be killd, it will eat too much mem.
+  # Make this spider instance suicide.
+  # For now, specially for `capybara-webkit`
+  def suicide
+    if Capybara.mode.to_s == 'webkit'
+      @page.driver.browser.instance_variable_get(:@connection).send :kill_process
     end
+    @page = nil
   end
+
+  protected
+
+    def sleep_or_not
+      if delay && delay > 0
+        logger.info "Nedd sleep #{delay} sec."
+        sleep(delay)
+        logger.info 'Wakeup'
+      end
+    end
 
 end
