@@ -190,10 +190,7 @@ class MicroSpider
   end
 
   def crawl(&block)
-    if completed?
-      suicide
-      return excretion
-    end
+    return excretion if completed?
 
     @paths.compact!
     path = nil
@@ -204,7 +201,7 @@ class MicroSpider
     end
 
     if path.nil?
-      excretion[:status] = 'completed'
+      complete
       return excretion
     end
 
@@ -335,6 +332,11 @@ class MicroSpider
         sleep(delay)
         logger.info 'Wakeup'
       end
+    end
+
+    def complete
+      excretion[:status] = 'completed'
+      suicide
     end
 
 end
