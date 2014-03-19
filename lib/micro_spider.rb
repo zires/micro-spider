@@ -292,6 +292,7 @@ class MicroSpider
     spider         = self.class.new
     spider.logger  = logger
     spider.timeout = timeout
+    spider.site(@site)
     spider.learn(&block) if block_given?
     spider
   end
