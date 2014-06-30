@@ -13,19 +13,11 @@ spider.learn do
   entrance '/news'
   
   field :top_story, '#top-story h2 a'
-  
-  follow '.story' do
-    
-    field :title, 'h1.story-header'
-    field :body,  '.story-body'
-
-    fields :related_stories, '.related-links-list a'
-    
-  end
-  
 end
 
 spider.crawl
+
+spider.results
 
 ```
 
