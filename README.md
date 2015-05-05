@@ -12,7 +12,7 @@ spider.learn do
   site 'http://www.bbc.com'
   entrance '/news'
   
-  field :top_story, '#top-story h2 a'
+  fields :top_stories, 'a.title-link'
 end
 
 spider.crawl
