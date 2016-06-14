@@ -1,10 +1,10 @@
 require 'test_helper'
 
-class MicroSpiderTest < MiniTest::Unit::TestCase
+class MicroSpiderTest < Test::Unit::TestCase
 
   def setup
-   @spider = MicroSpider.new
-   @spider.logger.level = Logger::WARN
+    @spider = MicroSpider.new
+    @spider.logger.level = Logger::WARN
   end
 
   def test_spider_can_visit_path_with_some_delays
