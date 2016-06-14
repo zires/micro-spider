@@ -1,5 +1,3 @@
-require 'enumerable/lazy' if RUBY_VERSION < '2.0'
-
 module SpiderCore
   module Behavior
 
