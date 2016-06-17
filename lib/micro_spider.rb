@@ -153,7 +153,6 @@ class MicroSpider
 
   def site(url)
     return if @site
-    entrance('/')
     Capybara.app_host = @excretion[:site] = @site = url
   end
 
