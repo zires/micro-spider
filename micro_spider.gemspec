@@ -17,8 +17,10 @@ Gem::Specification.new do |s|
 
   s.add_dependency "capybara"
   s.add_dependency "capybara-mechanize"
+  s.add_dependency "hamster"
+  s.add_dependency "hashie"
 
-  s.add_development_dependency "test-unit"
+  s.add_development_dependency "minitest"
   s.add_development_dependency "pry"
   s.add_development_dependency "yard"
   s.add_development_dependency "rake"

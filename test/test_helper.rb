@@ -7,7 +7,7 @@ rescue Bundler::BundlerError => e
 end
 
 require 'sinatra/base'
-require 'test/unit'
+require 'minitest/autorun'
 require 'pry'
 
 # Enable turn if it is available

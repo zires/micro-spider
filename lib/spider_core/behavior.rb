@@ -3,10 +3,10 @@ module SpiderCore
 
     protected
 
-    def scan_all(kind, pattern, opts = {})
+    def scan_all(pattern, opts = {})
       pattern = handle_pattern(pattern)
       if pattern.is_a?(String)
-        elements = all(kind, pattern).lazy
+        elements = all(selector, pattern).lazy
         if opts[:limit] && opts[:limit].to_i > 0
           elements = elements.take(opts[:limit].to_i)
         end
@@ -16,10 +16,10 @@ module SpiderCore
       end
     end
 
-    def scan_first(kind, pattern)
+    def scan_first(pattern)
       pattern = handle_pattern(pattern)
       if pattern.is_a?(String)
-        first(kind, pattern)
+        first(selector, pattern)
       elsif pattern.is_a?(Regexp)
         html[pattern, 1]
       end
@@ -57,6 +57,10 @@ module SpiderCore
         scan_results.each { |v| pattern = pattern.sub(/%\{#{v}\}/, @setted_variables[v]) }
       end
       pattern
+    end
+
+    def put(display, value)
+      @current_location = @current_location.put(display, value)
     end
 
   end

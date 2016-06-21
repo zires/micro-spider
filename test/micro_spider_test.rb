@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MicroSpiderTest < Test::Unit::TestCase
+class MicroSpiderTest < Minitest::Unit::TestCase
 
   def setup
     @spider = MicroSpider.new
@@ -16,22 +16,31 @@ class MicroSpiderTest < Test::Unit::TestCase
     assert (Time.now - now) > 5
   end
 
+  def test_spider_can_get_field
+    @spider.entrance('/')
+    @spider.field(:name, '#name')
+    excretion = @spider.crawl
+    assert_equal 'Home', excretion['/']['name']
+    assert_equal 'Home', @spider.get('name')
+    assert_equal nil, @spider.get('name1')
+  end
+
   def test_spider_can_follow_lots_of_links
     @spider.entrance('/')
     @spider.follow('.links a') do
       field :name, '#name'
     end
     excretion = @spider.crawl
-    excretion[:results].first[:follow].first.each do |f|
-      case f[:entrance]
+    excretion['/']["follow::.links a"].each do |path, value|
+      case path
       when '/a'
-        assert_equal 'This is a', f[:field].first[:name]
+        assert_equal 'This is a', value.get('name')
       when '/b'
-        assert_equal 'This is b', f[:field].first[:name]
+        assert_equal 'This is b', value.get('name')
       when '/c'
-        assert_equal 'This is c', f[:field].first[:name]
+        assert_equal 'This is c', value.get('name')
       when '/d'
-        assert_equal 'This is d', f[:field].first[:name]
+        assert_equal 'This is d', value.get('name')
       end
     end
   end
@@ -44,18 +53,17 @@ class MicroSpiderTest < Test::Unit::TestCase
       end
     end
     excretion = @spider.crawl
-    excretion[:results].first[:follow].first.each do |f|
-      refute_empty f[:follow].first
-      f[:follow].first.each do |ff|
-        case ff[:entrance]
+    excretion['/']["follow::.links a"].each do |key, value|
+      value["follow::.links a"].each do |k, v|
+        case k
         when '/a'
-          assert_equal 'This is a', ff[:field].first[:name]
+          assert_equal 'This is a', v.get('name')
         when '/b'
-          assert_equal 'This is b', ff[:field].first[:name]
+          assert_equal 'This is b', v.get('name')
         when '/c'
-          assert_equal 'This is c', ff[:field].first[:name]
+          assert_equal 'This is c', v.get('name')
         when '/d'
-          assert_equal 'This is d', ff[:field].first[:name]
+          assert_equal 'This is d', v.get('name')
         end
       end
     end
@@ -68,12 +76,12 @@ class MicroSpiderTest < Test::Unit::TestCase
       field(:current_page, '#current_page')
     end
     excretion = @spider.crawl
-    excretion[:results].each do |f|
-      f[:entrance] =~ /\/page\/(\d)/
-      assert_equal "Current Page #{$1}", f[:field].first[:current_page]
+    excretion.each do |k,v|
+      k =~ /\/page\/(\d)/
+      assert_equal "Current Page #{$1}", v.get('current_page')
     end
   end
-  
+
   def test_spider_can_follow_and_keep_eyes_on_next_page
     @spider.entrance('/page/1')
     @spider.follow('a.next_page') do
@@ -81,9 +89,9 @@ class MicroSpiderTest < Test::Unit::TestCase
       field :current_page, '#current_page'
     end
     excretion = @spider.crawl
-    excretion[:results].first[:follow].first.each do |f|
-      f[:entrance] =~ /\/page\/(\d)/
-      assert_equal "Current Page #{$1}", f[:field].first[:current_page]
+    excretion['/page/1']['follow::a.next_page'].each do |k, v|
+      k =~ /\/page\/(\d)/
+      assert_equal "Current Page #{$1}", v.get('current_page')
     end
   end
 
@@ -91,8 +99,9 @@ class MicroSpiderTest < Test::Unit::TestCase
   end
 
   def test_spider_can_create_custom_action
+    @saved = false
     @spider.create_action(:save) do |result|
-      result[:save] = 'saved'
+      @saved = true
     end
     @spider.learn do
       entrance '/'
@@ -100,24 +109,27 @@ class MicroSpiderTest < Test::Unit::TestCase
       save
     end
     excretion = @spider.crawl
-    assert_equal 'saved', excretion[:results].first[:save]
+    assert_equal true, @saved
+    assert_equal 'Home', excretion['/']['name']
+    assert_equal 'Home', @spider.get('name')
   end
 
-  def test_spider_can_create_custom_action_reached_by_spawn
-    @spider.create_action(:save) do |result|
-      result[:save] = 'saved'
-    end
-    @spider.learn do
-      entrance '/'
-      field :name, '#name'
-      save
-      follow '.links a' do
-        field :name, '#name'
-        save
-      end
-    end
-    excretion = @spider.crawl
-    assert_equal 'saved', excretion[:results].first[:follow].first[0][:save]
-  end
-
+  #def test_spider_can_create_custom_action_reached_by_spawn
+    #@saved = false
+    #@spider.create_action(:save) do |result|
+      #@saved = true
+    #end
+    #@spider.learn do
+      #entrance '/'
+      #field :name, '#name'
+      #save
+      #follow '.links a' do
+        #field :name, '#name'
+        #save
+      #end
+    #end
+    #excretion = @spider.crawl
+    #require 'pry'; binding.pry
+    #assert_equal true, @saved
+  #end
 end

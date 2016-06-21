@@ -1,3 +1,4 @@
+require 'hashie'
 require 'capybara'
 require 'capybara/dsl'
 require 'capybara/mechanize'
@@ -32,14 +33,16 @@ class MicroSpider
   include SpiderCore::PaginationDSL
 
   attr_reader   :excretion, :paths, :delay, :current_location, :visited_paths, :broken_paths
-  attr_accessor :logger, :actions, :recipe, :skip_set_entrance, :timeout
+  attr_accessor :logger, :actions, :recipe, :skip_set_entrance, :timeout, :selector
 
-  def initialize(excretion = nil)
+  def initialize(excretion = nil, selector: :css)
+    @selector         = selector
     @paths            = []
     @actions          = []
     @setted_variables = {}
     @timeout          = 120
-    @excretion        = excretion || { status: 'inprogress', results: [] }
+    @status           = 'pending'
+    @excretion        = excretion || SpiderCore::Excretion.new
     @logger           = Logger.new(STDOUT)
     @visited_paths    = Set.new
     @broken_paths     = []
@@ -67,7 +70,7 @@ class MicroSpider
     sleep_or_not
     logger.info "Begin to visit #{path}."
     super(path)
-    @current_location = {entrance: path}
+    @current_location = SpiderCore::Excretion['_path' => path]
     logger.info "Current location is #{path}."
   end
 
@@ -84,16 +87,15 @@ class MicroSpider
   #   spider.set :table, '.tb a', selector: :css do |e|
   #     e['src']
   #   end
-  def set(name, value, opts = {}, &block)
-    selector = opts.delete(:selector)
-    if selector.nil?
-      @setted_variables[name.to_s] = value
-    else
-      actions << lambda {
-        elements = scan_all(selector, value, opts)
-        @setted_variables[name.to_s] = block_given? ? yield(elements) : handle_element(elements.first)
-      }
-    end
+  def set(name, value)
+    @setted_variables[name.to_s] = value
+  end
+
+  def set_on(name, pattern, &block)
+    actions << lambda {
+      element = scan_first(pattern)
+      @setted_variables[name.to_s] = block_given? ? yield(element) : handle_element(element)
+    }
   end
 
   # Click the locator. This will trigger visit action and change current location.
@@ -107,8 +109,9 @@ class MicroSpider
         spider = self.spawn
         spider.entrance(path)
         spider.learn(&block)
-        current_location[:click] ||= []
-        current_location[:click] << spider.crawl[:results]
+        put(
+          "click::#{path}", spider.crawl
+        )
       else
         visit(path)
       end
@@ -153,7 +156,7 @@ class MicroSpider
 
   def site(url)
     return if @site
-    Capybara.app_host = @excretion[:site] = @site = url
+    Capybara.app_host = @site = url
   end
 
   # This will be the first path for spider to visit.
@@ -171,21 +174,25 @@ class MicroSpider
     @paths += path_or_paths
   end
 
+  def with(pattern, path:, &block)
+    visit(path)
+    scan_all(pattern).map{ |element| yield(element) }
+  end
+
   # Sometimes the entrances are on the page.
   # @param path [String] path to visit
   # @param pattern [String, Regexp] links pattern
   #
   # @example
   #   spider = MicroSpider.new
-  #   spider.entrance_on_path('http://google.com', '.links a')
+  #   spider.entrance_on('.links a')
+  #   spider.entrance_on('.links a', path: '/a')
   #
-  def entrance_on_path(path, pattern, opts = {}, &block)
+  def entrance_on(pattern, path: '/', attr: :href)
     return if @skip_set_entrance
-    kind = opts[:kind] || :css
+
     visit(path)
-    entrances = scan_all(kind, pattern, opts).map do |element|
-      block_given? ? yield(element) : element[:href]
-    end
+    entrances = scan_all(pattern).map{ |element| element[attr] }
     @paths += entrances.to_a
   end
 
@@ -209,12 +216,14 @@ class MicroSpider
 
     begin
       visit(path)
+      @status = 'inprogress'
     rescue Timeout::Error => err
       @broken_paths << path
       logger.fatal("Timeout!!! execution expired when visit `#{path}`")
       logger.fatal(err)
     rescue SystemExit, Interrupt
       logger.fatal("SystemExit && Interrupt")
+      @status = 'exit'
       exit!
     rescue Exception => err
       @broken_paths << path
@@ -224,8 +233,10 @@ class MicroSpider
     else
       @visited_paths << path
       execute_actions
-      yield(@current_location) if block_given?
-      excretion[:results] << @current_location
+      @excretion = @excretion.put(path, @current_location)
+      #@excretion[path] = @current_location
+      #yield(@current_location) if block_given?
+      #excretion[:results] << @current_location
     ensure
       @actions = []
       @skip_set_entrance = true
@@ -238,7 +249,8 @@ class MicroSpider
   def reset
     return unless completed?
     @paths            = visited_paths.to_a
-    @excretion        = { status: 'inprogress', results: [] }
+    @status           = 'pending'
+    @excretion        = nil
     @visited_paths    = Set.new
     @current_location = nil
   end
@@ -257,7 +269,7 @@ class MicroSpider
   #   spider.save
   #
   def create_action(name, &block)
-    action = proc { actions << lambda { block.call(current_location) } }
+    action = proc { actions << lambda { block.call(@excretion) } }
     metaclass.send :define_method, name, &action
   end
 
@@ -269,10 +281,12 @@ class MicroSpider
         logger.fatal('Timeout!!! execution expired when execute action')
         logger.fatal(err.message)
         logger.fatal(err.backtrace.inspect)
+        @visited_paths.pop
         break
       rescue SpiderCore::ClickPathNotFound => err
         logger.fatal(err.message)
         logger.fatal(err.backtrace.inspect)
+        @visited_paths.pop
         break
       end
     }
@@ -297,16 +311,19 @@ class MicroSpider
     spider
   end
 
-  def results
-    excretion[:results]
-  end
-
   def completed?
-    excretion[:status] == 'completed'
+    @status == 'completed'
   end
 
   def metaclass
     class << self; self; end
+  end
+
+  def get(field)
+    @_deep_fetch ||= excretion.extend Hashie::Extensions::DeepFind
+    result = @_deep_fetch.deep_find_all(field.to_s)
+    return if result.nil?
+    result.length == 1 ? result.pop : result
   end
 
   # The default page is Capybara.current_session.
@@ -336,7 +353,7 @@ class MicroSpider
     end
 
     def complete
-      excretion[:status] = 'completed'
+      @status = 'completed'
       suicide
     end
 
