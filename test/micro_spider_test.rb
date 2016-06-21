@@ -17,11 +17,16 @@ class MicroSpiderTest < Minitest::Unit::TestCase
   end
 
   def test_spider_can_get_field
-    @spider.entrance('/')
-    @spider.field(:name, '#name')
+    @spider.learn do
+      entrance '/'
+      entrance '/a'
+      field :name, '#name'
+    end
     excretion = @spider.crawl
     assert_equal 'Home', excretion['/']['name']
-    assert_equal 'Home', @spider.get('name')
+    assert_equal 'This is a', excretion['/a']['name']
+    assert_includes @spider.get('name'), 'Home'
+    assert_includes @spider.get('name'), 'This is a'
     assert_equal nil, @spider.get('name1')
   end
 

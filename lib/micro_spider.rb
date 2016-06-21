@@ -233,10 +233,8 @@ class MicroSpider
     else
       @visited_paths << path
       execute_actions
-      @excretion = @excretion.put(path, @current_location)
-      #@excretion[path] = @current_location
       #yield(@current_location) if block_given?
-      #excretion[:results] << @current_location
+      @excretion = @excretion.put(path, @current_location)
     ensure
       @actions = []
       @skip_set_entrance = true
