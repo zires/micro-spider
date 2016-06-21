@@ -11,7 +11,6 @@ spider = MicroSpider.new
 spider.learn do
   site 'http://www.bbc.com'
   entrance '/news'
-
   fields :top_stories, 'a.title-link'
 end
 
