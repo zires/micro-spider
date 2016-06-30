@@ -15,15 +15,15 @@ Gem::Specification.new do |s|
   s.files = Dir["{lib}/**/*"] + ["MIT-LICENSE", "Rakefile", "README.md"]
   s.test_files = Dir["test/**/*"]
 
-  s.add_dependency "capybara", '~> 2.7'
-  s.add_dependency "capybara-mechanize", '~> 1.5.0'
-  s.add_dependency "hamster", '~> 3.0.0'
-  s.add_dependency "hashie", '~> 3.4.4'
+  s.add_dependency "capybara", '~> 2.7', '>= 2.7'
+  s.add_dependency "capybara-mechanize", '~> 1.5.0', '>= 1.5.0'
+  s.add_dependency "hamster", '~> 3.0.0', '>= 3.0.0'
+  s.add_dependency "hashie", '~> 3.4.4', '>= 3.4.0'
 
-  s.add_development_dependency "minitest", '~> 4.7.5'
-  s.add_development_dependency "pry", '~> 0.10.3'
-  s.add_development_dependency "yard", '~> 0.8.7.6'
-  s.add_development_dependency "rake", '~> 11.2.2'
-  s.add_development_dependency "turn", '~> 0.9.7'
-  s.add_development_dependency "sinatra", '~> 1.4.7'
+  s.add_development_dependency "minitest", '~> 4.7.5', '>= 4.7.5'
+  s.add_development_dependency "pry", '~> 0.10.3', '>= 0.10.3'
+  s.add_development_dependency "yard", '~> 0.8.7.6', '>= 0.8.7'
+  s.add_development_dependency "rake", '~> 11.2.2', '>= 11.2.0'
+  s.add_development_dependency "turn", '~> 0.9.7', '>= 0.9.7'
+  s.add_development_dependency "sinatra", '~> 1.4.7', '>= 1.4.7'
 end
