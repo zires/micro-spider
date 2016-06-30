@@ -1,11 +1,11 @@
 PATH
   remote: .
   specs:
-    micro_spider (0.1.23)
-      capybara
-      capybara-mechanize
-      hamster
-      hashie
+    micro_spider (0.2.0)
+      capybara (~> 2.7)
+      capybara-mechanize (~> 1.5.0)
+      hamster (~> 3.0.0)
+      hashie (~> 3.4.4)
 
 GEM
   remote: http://rubygems.org/
@@ -83,12 +83,12 @@ PLATFORMS
 
 DEPENDENCIES
   micro_spider!
-  minitest
-  pry
-  rake
-  sinatra
-  turn
-  yard
+  minitest (~> 4.7.5)
+  pry (~> 0.10.3)
+  rake (~> 11.2.2)
+  sinatra (~> 1.4.7)
+  turn (~> 0.9.7)
+  yard (~> 0.8.7.6)
 
 BUNDLED WITH
    1.12.5
